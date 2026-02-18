@@ -68,6 +68,7 @@ CLASS_COLORS = {
 # ------------------
 
 def map_mask(mask_raw: np.ndarray) -> np.ndarray:
+    """Map raw uint16 IDs to contiguous [0..NUM_CLASSES-1], others -> IGNORE_INDEX."""
     mask = np.full(mask_raw.shape, fill_value=IGNORE_INDEX, dtype=np.uint8)
     for raw_id, train_id in RAW_ID_TO_TRAIN_ID.items():
         mask[mask_raw == raw_id] = train_id
@@ -97,6 +98,7 @@ def colorize_mask(pred_mask: np.ndarray) -> np.ndarray:
 
 
 def compute_iou_per_class(all_preds, all_targets):
+    """all_preds/all_targets: torch tensors (N,H,W) with class indices."""
     preds = all_preds.view(-1).cpu().numpy().astype(np.int64)
     targets = all_targets.view(-1).cpu().numpy().astype(np.int64)
 
@@ -115,6 +117,8 @@ def compute_iou_per_class(all_preds, all_targets):
         else:
             ious.append(tp / denom)
     return ious
+
+
 def compute_confusion_matrix(all_preds, all_targets, num_classes=NUM_CLASSES):
     """
     all_preds, all_targets: torch tensors (N, H, W) with class indices.
@@ -132,12 +136,13 @@ def compute_confusion_matrix(all_preds, all_targets, num_classes=NUM_CLASSES):
     np.add.at(conf_mat, (targets, preds), 1)
     return conf_mat
 
+
 def load_model():
     print("Loading model from", CHECKPOINT_PATH)
     checkpoint = torch.load(CHECKPOINT_PATH, map_location=DEVICE)
 
     # Build same base architecture as in training
-    model = deeplabv3_resnet50(weights=None)   # no pretrained weights needed here
+    model = deeplabv3_resnet50(weights=None)
     model.classifier[4] = nn.Conv2d(256, NUM_CLASSES, kernel_size=1)
 
     state_dict = checkpoint["model_state_dict"]
@@ -204,10 +209,12 @@ def evaluate_split(split: str, save_visuals: bool = True, max_visuals: int = 30)
         mask_mapped = map_mask(mask_raw)
 
         # apply same val transform as training
-        augmented = transform(image=cv2.cvtColor(orig_bgr, cv2.COLOR_BGR2RGB), mask=mask_mapped)
+        augmented = transform(
+            image=cv2.cvtColor(orig_bgr, cv2.COLOR_BGR2RGB),
+            mask=mask_mapped,
+        )
         image_t = augmented["image"].unsqueeze(0).to(DEVICE)  # (1,3,H,W)
-        mask_t = augmented["mask"]  # (H,W)
-        mask_t = mask_t.long()
+        mask_t = augmented["mask"].long()  # (H,W)
 
         # inference
         start_t = time.time()
@@ -224,7 +231,6 @@ def evaluate_split(split: str, save_visuals: bool = True, max_visuals: int = 30)
 
         # visualization (limited number)
         if save_visuals and vis_count < max_visuals:
-            # resize pred to original resolution for nicer overlay
             pred_np = pred.numpy().astype(np.uint8)
             pred_resized = cv2.resize(
                 pred_np,
@@ -245,7 +251,8 @@ def evaluate_split(split: str, save_visuals: bool = True, max_visuals: int = 30)
         print("No images processed!")
         return
 
-        all_preds = torch.stack(all_preds, dim=0)
+    # Convert lists -> tensors
+    all_preds = torch.stack(all_preds, dim=0)
     all_targets = torch.stack(all_targets, dim=0)
 
     # IoU
