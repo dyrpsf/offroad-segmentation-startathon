@@ -1,0 +1,26 @@
+# Ignore dataset folders if they ever appear here
+Offroad_Segmentation_Training_Dataset/
+Offroad_Segmentation_testImages/
+ENV_SETUP/
+*.zip
+*.rar
+__pycache__/
+*.pyc
+outputs/
+
+# Ignore large model weights
+*.pth
+*.pt
+
+# Ignore dataset if ever copied here
+Offroad_Segmentation_Training_Dataset/
+Offroad_Segmentation_testImages/
+ENV_SETUP/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Zips and outputs
+*.zip
+outputs/
