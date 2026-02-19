@@ -249,3 +249,5 @@ mportant: Test images are never used for training. They are only used for evalua
 Dataset, baseline scripts, and problem statement provided by Duality AI and Startathon Hackathon 2026 organizers.
 Model implemented using PyTorch and torchvision.
 Augmentations by Albumentations.
+<br>
+Author: Deepak Yadav, Ashutosh Pavaiya, Soumya Gupta, Aashka Saiwal
