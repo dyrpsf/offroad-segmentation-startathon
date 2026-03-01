@@ -250,4 +250,4 @@ Dataset, baseline scripts, and problem statement provided by Duality AI and Star
 Model implemented using PyTorch and torchvision.
 Augmentations by Albumentations.
 <br>
-Author: Deepak Yadav, Ashutosh Pavaiya, Soumya Gupta, Aashka Saiwal
+Authors: Deepak Yadav, Ashutosh Pavaiya, Soumya Gupta, Aashka Saiwal
